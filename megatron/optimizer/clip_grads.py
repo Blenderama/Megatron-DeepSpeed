@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 from deepspeed.accelerator import get_accelerator
 if get_accelerator().device_name() == 'cuda':
     from apex.multi_tensor_apply import multi_tensor_applier
-    import amp_C
+    # import amp_C
 
 from megatron.model.module import param_is_not_shared
 from megatron.core.tensor_parallel import param_is_not_tensor_parallel_duplicate
@@ -76,15 +76,15 @@ def clip_grad_norm_fp32(parameters, grads_for_norm,
                 # Use apex's multi-tensor applier for efficiency reasons.
                 # Multi-tensor applier takes a function and a list of list
                 # and performs the operation on that list all in one kernel.
-                if grads_for_norm:
-                    grad_norm, _ = multi_tensor_applier(
-                        amp_C.multi_tensor_l2norm,
-                        dummy_overflow_buf,
-                        [grads_for_norm],
-                        False # no per-parameter norm
-                    )
-                else:
-                    grad_norm = torch.cuda.FloatTensor([0])
+                # if grads_for_norm:
+                #     grad_norm, _ = multi_tensor_applier(
+                #         amp_C.multi_tensor_l2norm,
+                #         dummy_overflow_buf,
+                #         [grads_for_norm],
+                #         False # no per-parameter norm
+                #     )
+                # else:
+                grad_norm = torch.cuda.FloatTensor([0])
             else:
                 grad_norm = torch.norm(grads_for_norm,p=2.0)
             # Since we will be summing across data parallel groups,
@@ -104,15 +104,15 @@ def clip_grad_norm_fp32(parameters, grads_for_norm,
     # Scale.
     clip_coeff = max_norm / (total_norm + 1.0e-6)
     if clip_coeff < 1.0:
-        if get_accelerator().device_name() == 'cuda':
-            dummy_overflow_buf = get_accelerator().IntTensor([0])
-            multi_tensor_applier(amp_C.multi_tensor_scale,
-                                dummy_overflow_buf,
-                                [grads, grads],
-                                clip_coeff)
-        else:
-            for g in grads:
-                g.detach().mul_(clip_coeff.to(g.device))
+        # if get_accelerator().device_name() == 'cuda':
+        #     dummy_overflow_buf = get_accelerator().IntTensor([0])
+        #     multi_tensor_applier(amp_C.multi_tensor_scale,
+        #                         dummy_overflow_buf,
+        #                         [grads, grads],
+        #                         clip_coeff)
+        # else:
+        for g in grads:
+            g.detach().mul_(clip_coeff.to(g.device))
 
     return total_norm
 
