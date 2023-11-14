@@ -11,7 +11,7 @@ from torch.nn.parallel import DistributedDataParallel as torchDDP
 from deepspeed.accelerator import get_accelerator
 if get_accelerator().device_name() == 'cuda':
     from apex.multi_tensor_apply import multi_tensor_applier
-    import amp_C
+    # import amp_C
 
 from megatron import (
     get_args,
@@ -74,16 +74,16 @@ def calc_params_l2_norm(model):
     # Calculate norm
     dummy_overflow_buf = get_accelerator().IntTensor([0])
     
-    if get_accelerator().device_name() == 'cuda':
+    # if get_accelerator().device_name() == 'cuda':
 
-        norm, _ = multi_tensor_applier(
-            amp_C.multi_tensor_l2norm,
-            dummy_overflow_buf,
-            [params_data],
-            False # no per-parameter norm
-        )
-    else :
-        norm = torch.norm(params_data,p=2.0)
+    #     norm, _ = multi_tensor_applier(
+    #         amp_C.multi_tensor_l2norm,
+    #         dummy_overflow_buf,
+    #         [params_data],
+    #         False # no per-parameter norm
+    #     )
+    # else :
+    norm = torch.norm(params_data,p=2.0)
     norm_2 = norm * norm
     # Sum across all model-parallel GPUs.
     torch.distributed.all_reduce(norm_2,
