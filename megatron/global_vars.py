@@ -119,10 +119,13 @@ def _build_num_microbatches_calculator(args):
 
 
 def _build_tokenizer(args):
+    from transformers import AutoTokenizer
     """Initialize tokenizer."""
     global _GLOBAL_TOKENIZER
     _ensure_var_is_not_initialized(_GLOBAL_TOKENIZER, 'tokenizer')
-    _GLOBAL_TOKENIZER = build_tokenizer(args)
+    # _GLOBAL_TOKENIZER = build_tokenizer(args)
+    _GLOBAL_TOKENIZER = AutoTokenizer.from_pretrained("THUDM/chatglm3-6b", trust_remote_code=True)
+
     return _GLOBAL_TOKENIZER
 
 
